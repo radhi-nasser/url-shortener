@@ -78,4 +78,4 @@ Both the app and api restart on code change.
 - [ ] Add testing to the backend and the frontend
 - [ ] Add a form library to better handle the form when it will get bigger.
 - [x] Handle possible backend collisions.
-- [ ] Improve frontend error handling
+- [x] Improve frontend error handling

@@ -3,6 +3,7 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { copyToClipboard, sleep } from "../utils";
 
 export function UrlShortenerForm() {
+  const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [shortenedUrl, setShortenedUrl] = useState<null | string>(null);
   const [longUrl, setLongUrl] = useState<string>("");
@@ -12,11 +13,14 @@ export function UrlShortenerForm() {
   };
 
   const onClick = async (e: FormEvent<HTMLFormElement>) => {
+    // preventing form redirection
     e.preventDefault();
 
-    try {
-      setIsLoading(true);
+    setIsLoading(true);
+    setHasError(false);
+    setShortenedUrl(null);
 
+    try {
       const {
         data: { shortUrlHash },
       } = await axios.post(
@@ -33,10 +37,11 @@ export function UrlShortenerForm() {
       await sleep(1000); // for the sake of the demo
 
       setShortenedUrl(`${process.env.REACT_APP_BACKEND_URL}/${shortUrlHash}`);
-
-      setIsLoading(false);
     } catch (err) {
+      setHasError(true);
       console.error("An error has occurred", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,21 +73,27 @@ export function UrlShortenerForm() {
           {!isLoading ? "Submit" : "Generating..."}
         </button>
       </form>
-      {shortenedUrl && (
-        <div className="inline-block">
-          Your shortened url is:
-          <div className="flex flex-row items-center justify-content gap-x-2">
-            <span className="font-bold">{shortenedUrl}</span>
-            <button
-              className="py-1 px-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-gray-200 hover:bg-gray-300"
-              onClick={() => {
-                copyToClipboard(shortenedUrl);
-              }}
-            >
-              Copy to clipboard
-            </button>
-          </div>
+      {hasError ? (
+        <div className="text-red-600">
+          An error has occurred 😞 Please try again later.
         </div>
+      ) : (
+        shortenedUrl && (
+          <div className="inline-block">
+            Your shortened url is:
+            <div className="flex flex-row items-center justify-content gap-x-2">
+              <span className="font-bold">{shortenedUrl}</span>
+              <button
+                className="py-1 px-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-gray-200 hover:bg-gray-300"
+                onClick={() => {
+                  copyToClipboard(shortenedUrl);
+                }}
+              >
+                Copy to clipboard
+              </button>
+            </div>
+          </div>
+        )
       )}
     </div>
   );
